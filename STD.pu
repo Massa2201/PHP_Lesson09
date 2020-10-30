@@ -1,0 +1,18 @@
+@startuml
+
+title Lesson10-1
+
+[*] --> メイン画面
+メイン画面 --> 入力画面: 新規入力
+入力画面 --> 投稿画面: 確認
+投稿画面 --> メイン画面: トップに戻る
+投稿画面 --> 入力画面: 入力情報の修正
+投稿画面 --> [*]: 投稿処理
+
+note left of メイン画面 : main
+note left of 入力画面 : input
+note left of 投稿画面 : submit
+
+
+
+@enduml 
