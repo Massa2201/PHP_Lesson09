@@ -34,6 +34,7 @@
     <body>
         
         <?php
+        $content = null;
         if(isset($_POST['content'])) {
             $content=$_POST['content'];
         }else {
