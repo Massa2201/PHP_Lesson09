@@ -5,6 +5,11 @@ $password = "dbpass";
 $dbname = "board";
 $tablename = "table1";
 
+if(isset($_POST['transition']))
+{
+    
+
+
 if ($_POST['transition'] == "trans_input_new")
 {
     //trans_input_new遷移
@@ -24,7 +29,21 @@ elseif ($_POST['transition'] == "trans_submit")
 elseif ($_POST['transition'] == "trans_return_top")
 {
     //trans_return_top遷移
+    
+    if(isset($_POST['btn03-1'])) {
+
+        $content=$_POST['content'];
+
+        $escaped_content = mysqli_real_escape_string($link, $content);
+
+        $result = mysqli_query($link,"INSERT INTO $tablename SET content='$escaped_content'");
+        if(! $result) { 
+            exit("INSERT error(1)!");
+        }
+    }
+
     echo_page_list();
+}
 }
 elseif (!isset($_POST['transition']))
 {
@@ -34,10 +53,12 @@ else
 {
     echo "Internal Error!"; // あり得ないエラー
 }    
+
 ////////////////////////////////////////////////////////////////
 function echo_page_list()
 {
     global $hostname, $username, $password, $dbname, $tablename;
+
 
     echo <<<EOT
 <!DOCTYPE html>
@@ -77,13 +98,10 @@ EOT;
         echo "</tr>";
     }
     echo "</table>";
-    mysqli_free_result($result);
-
-    mysqli_close($link);
 
     echo <<<EOT
         <form method="post" action="Lesson10-2.php">
-            <button type="submit" name="button_new" value="button_new">新規入力</button>
+            <button type="submit" name="btn01-1" value="btn01-1">新規入力</button>
             <input type="hidden" name="transition" value="trans_input_new">
         </form>
 EOT;
@@ -91,6 +109,10 @@ EOT;
     </body>
 </html>
 EOT;
+
+mysqli_free_result($result);
+
+mysqli_close($link);
 }
 function echo_page_input()
 {
@@ -102,7 +124,33 @@ function echo_page_input()
             <title>トップページ</title>
         </head>
         <body>
-        <p>inputのスクリーン</p>
+        
+        <div class="box">
+        <h1> 投稿記事入力画面 </h1>
+        <form  class="box" method="post" action="Lesson10-2.php">
+            <div class="flex">
+            <p class="block">ここに入力してください</p>
+            <textarea name="content" rows="4" cols="25">
+EOT;
+              if(isset($_POST['content'])){echo $_POST['content'];
+              echo $content;
+              }
+              else {
+                  echo "";
+              }
+              echo <<<EOT
+              </textarea>
+            <br>
+            </div>
+            <button type="submit" name="btn02-1" value="btn02-1">投稿</button>
+            <input type="hidden" name="transition" value="trans_confirm">
+        </form>
+        <form  class="box" method="post" action="Lesson10-2.php">
+            <button class="btn" type="submit" name="btn02-2" value="btn02-1">戻る</button>
+            <input type="hidden" name="transition" value="trans_return_top">
+        </form>
+        </div>
+
         </body>
     </html>
 EOT;
@@ -118,15 +166,28 @@ function echo_page_confirm()
             <title>トップページ</title>
         </head>
         <body>
-        <p>confirmのスクリーン</p>
+EOT;
+        $content = "";
+        $content = $_POST['content'];
+        echo '入力内容は' . htmlspecialchars($content) . "です";
+
+    echo <<<EOT
+
+    <form method ="post" action="Lesson10-2.php">
+    <button class="center btn" type="submit" name="btn03-1" value="btn03-1">投稿</button>
+    <input type="hidden" name="transition" value="trans_return_top">
+    </form>
+    <form  class="box" method="post" action="Lesson10-2.php">
+    <input type="hidden" name="transition" value="trans_input_new">
+    <input type="hidden" name="content" value="$content">
+
+    <button type="submit" name="Btn12" value="Btn12">修正</button>
+    </form> 
+
         </body>
     </html>
 EOT;
-}
 
-function action_trans_submit()
-{
-    global $hostname, $username, $password, $dbname, $tablename;
 }
 
 ?>
