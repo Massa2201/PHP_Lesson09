@@ -13,6 +13,4 @@ note left of メイン画面 : main
 note left of 入力画面 : input
 note left of 投稿画面 : submit
 
-
-
-@enduml 
+@enduml
