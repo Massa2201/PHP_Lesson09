@@ -1,0 +1,21 @@
+@startuml
+left to right direction
+actor "会員" as actor01
+actor "管理者" as actor02
+rectangle "掲示板システム" {
+    usecase "ユーザ名の登録" as usecase01
+    usecase "パスワードの登録" as usecase02
+    usecase "ユーザ管理" as usecase03
+    usecase "テキストの投稿" as usecase04
+    usecase "テキストの削除" as usecase05
+    usecase "アクセスの禁止" as usecase06
+}
+actor01 --> usecase01
+actor01 --> usecase02
+actor01 --> usecase04
+actor01 --> usecase05
+actor02 --> usecase03
+actor02 --> usecase05
+actor02 --> usecase06
+
+@enduml
