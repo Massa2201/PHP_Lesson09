@@ -13,10 +13,8 @@ $pass = $_POST['pass'];
 if ((!isset($passlist[$user])) || $passlist[$user] != $pass) {
     login("パスワードが存在しないか違っています");
     exit;
-} else {
-    start();
-    exit;
 }
+
 if (isset($_POST['trans'])) {
 
     if ($_POST['trans'] == "login") {
@@ -36,7 +34,7 @@ if (isset($_POST['trans'])) {
 
 function start()
 {
-
+    global $user, $pass;
     echo <<<EOT
 <!DOCTYPE html>
 <html>
@@ -62,6 +60,9 @@ function start()
     <form method="POST" action="WebApp.php">
         <button type="submit" name="btn02" value="btn02">出勤</button>
         <input type="hidden" name="trans" value="finish">
+        <input type="hidden" name="user" value="$user">
+        <input type="hidden" name="pass" value="$pass">
+
     </form>
 
     </main>
@@ -129,9 +130,8 @@ function finish()
         <h1>トップ画面</h1>
         <p>finish</p><br>
         <form method="POST" action="WebApp.php">
-            username <input type="text" name="user" value=""><br>
-            password <input type="password" name="pass" value=""><br>
-            <button type="submit" name="btn01" value="btn01">ログイン</button>
+            
+            <button type="submit" name="btn01" value="btn01">退勤</button>
             <input type="hidden" name="trans" value="start">
         </form>
     
