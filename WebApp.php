@@ -1,7 +1,7 @@
 <?php
 
 $passlist = array('member' => 'memberpass');
-
+$time_now = date('H:i:s');
 
 if (!isset($_POST['user'])) {
     login("ログインしてください");
@@ -9,6 +9,17 @@ if (!isset($_POST['user'])) {
 }
 $user = $_POST['user'];
 $pass = $_POST['pass'];
+
+$hostname = '127.0.0.1';
+$username = 'root';
+$password = 'dbpass';
+$dbname = 'work_db';
+$tablename01 = 'masashi';
+
+$link = mysqli_connect($hostname, $username, $password);
+if (!$link) {
+    exit("Connect error!");
+}
 
 if ((!isset($passlist[$user])) || $passlist[$user] != $pass) {
     login("パスワードが存在しないか違っています");
@@ -41,14 +52,14 @@ function start()
 
 <head>
     <meta charset="utf-8" />
-    <title>メイン画面</title>
+    <title>出勤準備画面</title>
 </head>
 
 <body>
 
     <header>
 
-    <h1>メイン画面</h1>
+    <h1>出勤画面</h1>
 
     </header>
 
@@ -89,7 +100,7 @@ function login($text)
     
     <head>
         <meta charset="utf-8" />
-        <title>メイン画面</title>
+        <title>ログイン画面</title>
     </head>
     
     <body>
@@ -122,13 +133,44 @@ function finish()
     
     <head>
         <meta charset="utf-8" />
-        <title>トップ画面</title>
+        <title>出勤完了画面</title>
     </head>
     
     <body>
     
-        <h1>トップ画面</h1>
-        <p>finish</p><br>
+        <h1>出勤完了画面</h1>
+        <p>出勤いたしました。</p><br>
+        <form method="POST" action="WebApp.php">
+            
+            <button type="submit" name="btn01" value="btn01">退勤</button>
+            <input type="hidden" name="trans" value="start">
+        </form>
+    
+    
+    
+    </body>
+    </html>
+
+
+EOT;
+}
+function work_data()
+{
+    global $user, $pass;
+
+    echo <<<EOT
+
+    <!DOCTYPE html>
+    <html>
+    
+    <head>
+        <meta charset="utf-8" />
+        <title>勤務データ</title>
+    </head>
+    
+    <body>
+    
+        <p>勤務データ</p>
         <form method="POST" action="WebApp.php">
             
             <button type="submit" name="btn01" value="btn01">退勤</button>
