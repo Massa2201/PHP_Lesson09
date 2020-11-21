@@ -1,6 +1,6 @@
 <?php
 
-$passlist = array('member' => 'memberpass');
+$passlist = array('imai' => 'imaipass', 'kimura' => 'kimurapass');
 $time_now = date('H:i:s');
 
 if (!isset($_POST['user'])) {
@@ -21,6 +21,12 @@ if (!$link) {
     exit("Connect error!");
 }
 
+$result = mysqli_query($link, "USE $dbname");
+if (!$result) {
+    exit("Using database is failed!");
+}
+
+
 if ((!isset($passlist[$user])) || $passlist[$user] != $pass) {
     login("パスワードが存在しないか違っています");
     exit;
@@ -32,10 +38,20 @@ if (isset($_POST['trans'])) {
         login("");
         exit;
     } else if ($_POST['trans'] == "start") {
-        start();
-        exit;
+        if ($user == 'imai') {
+            start("imai");
+            exit;
+        } else if ($user == 'kimura') {
+            start("kimura");
+            exit;
+        } else {
+            start("ユーザ認証に失敗しました。エラーコード0001");
+        }
     } else if ($_POST['trans'] == "finish") {
         finish();
+        exit;
+    } else if ($_POST['trans'] == "work_data") {
+        work_data();
         exit;
     }
 } else {
@@ -43,7 +59,7 @@ if (isset($_POST['trans'])) {
     exit;
 }
 
-function start()
+function start($name_text)
 {
     global $user, $pass;
     echo <<<EOT
@@ -64,16 +80,40 @@ function start()
     </header>
 
     <main>
-
+    <p>$name_text</p>
     <p>2020年11月07日(土)</p>
     <p>20:00</p>
-    
+EOT;
+    if ($name_text == "imai") {
+
+        echo <<<EOT
+    <form method="POST" action="WebApp.php">
+        <button type="submit" name="btn03" value="btn03">勤務データ</button>
+        <input type="hidden" name="trans" value="work_data">
+        <input type="hidden" name="user" value="$user">
+        <input type="hidden" name="pass" value="$pass">
+    </form>
+EOT;
+    }
+
+    if ($name_text == "kimura") {
+
+        echo <<<EOT
+        <form method="POST" action="WebApp.php">
+            <button type="submit" name="btn03" value="btn03">勤務データ</button>
+            <input type="hidden" name="trans" value="work_data">
+            <input type="hidden" name="user" value="$user">
+            <input type="hidden" name="pass" value="$pass">
+        </form>
+EOT;
+    }
+
+    echo <<<EOT
     <form method="POST" action="WebApp.php">
         <button type="submit" name="btn02" value="btn02">出勤</button>
         <input type="hidden" name="trans" value="finish">
         <input type="hidden" name="user" value="$user">
         <input type="hidden" name="pass" value="$pass">
-
     </form>
 
     </main>
