@@ -17,6 +17,7 @@ $username = 'root';
 $password = 'dbpass';
 $dbname = 'work_db';
 $tablename01 = 'masashi';
+$tablename02 = 'kimura';
 
 $link = mysqli_connect($hostname, $username, $password);
 if (!$link) {
@@ -63,14 +64,7 @@ if (isset($_POST['trans'])) {
             start("出勤に失敗しました。エラーコード0002", "");
         }
     } else if ($_POST['trans'] == "work_data") {
-        if ($_POST['number'] == "0") {
-            work_data("");
-            exit;
-        } else {
-            work_data("");
-            exit;
-        }
-        work_data("");
+        work_data();
         exit;
     }
 } else {
@@ -81,12 +75,22 @@ if (isset($_POST['trans'])) {
 function start($name_text, $start01)
 {
 
-    global $user, $pass, $link, $result, $finish, $tablename01, $date_now, $time_now;
+    global $user, $pass, $link, $result, $finish, $tablename01, $date_now, $time_now, $tablename02;
 
-    if ($finish == '1') {
+    if ($finish == '1' && $user == 'imai') {
         $result = mysqli_query(
             $link,
             "update $tablename01 set FinishTime = '$time_now' order by id DESC LIMIT 1;"
+        );
+        if (!$result) {
+            exit("UPDATE error!");
+        }
+    }
+
+    if ($finish == '1' && $user == 'kimura') {
+        $result = mysqli_query(
+            $link,
+            "update $tablename02 set FinishTime = '$time_now' order by id DESC LIMIT 1;"
         );
         if (!$result) {
             exit("UPDATE error!");
@@ -112,19 +116,28 @@ function start($name_text, $start01)
 
     <main>
     <p>$name_text</p>
-    <p>2020年11月07日(土)</p>
-    <p>20:00</p>
+    <p>$date_now</p>
+    <p>$time_now</p>
 EOT;
     if ($name_text == "imai") {
 
         echo <<<EOT
     <form method="POST" action="WebApp.php">
-        <button type="submit" name="btn03" value="btn03">勤務データ</button>
+        <button type="submit" name="btn04" value="btn04">勤務データ</button>
         <input type="hidden" name="trans" value="work_data">
         <input type="hidden" name="user" value="$user">
         <input type="hidden" name="pass" value="$pass">
-        <input type="hidden" name="number" value="0">
     </form>
+
+
+    <form method="POST" action="WebApp.php">
+        <button type="submit" name="btn05" value="btn05">出勤</button>
+        <input type="hidden" name="trans" value="finish">
+        <input type="hidden" name="user" value="$user">
+        <input type="hidden" name="pass" value="$pass">
+        <input type="hidden" name="start" value="0">
+    </form>
+
 EOT;
     }
 
@@ -136,21 +149,18 @@ EOT;
             <input type="hidden" name="trans" value="work_data">
             <input type="hidden" name="user" value="$user">
             <input type="hidden" name="pass" value="$pass">
-            <input type="hidden" name="number" value="1">
         </form>
-EOT;
-    }
 
-
-    echo <<<EOT
-    <form method="POST" action="WebApp.php">
+        <form method="POST" action="WebApp.php">
         <button type="submit" name="btn02" value="btn02">出勤</button>
         <input type="hidden" name="trans" value="finish">
         <input type="hidden" name="user" value="$user">
         <input type="hidden" name="pass" value="$pass">
         <input type="hidden" name="start" value="0">
+
     </form>
 EOT;
+    }
 
     echo <<<EOT
 
@@ -202,7 +212,7 @@ EOT;
 
 function finish($finish)
 {
-    global $user, $pass, $link, $tablename01, $date_now, $time_now;
+    global $user, $pass, $link, $tablename01, $date_now, $time_now, $tablename02;
 
     echo <<<EOT
 
@@ -217,10 +227,20 @@ function finish($finish)
     <body>
 EOT;
 
-    if ($finish == '0') {
+    if ($finish == '0' && $user == 'imai') {
         $result = mysqli_query(
             $link,
             "INSERT INTO $tablename01 SET WorkDate='$date_now', StartTime='$time_now'"
+        );
+        if (!$result) {
+            exit("INSERT error!");
+        }
+    }
+
+    if ($finish == '0' && $user == 'kimura') {
+        $result = mysqli_query(
+            $link,
+            "INSERT INTO $tablename02 SET WorkDate='$date_now', StartTime='$time_now'"
         );
         if (!$result) {
             exit("INSERT error!");
@@ -255,9 +275,9 @@ EOT;
 
 EOT;
 }
-function work_data($start01)
+function work_data()
 {
-    global $user, $pass, $result, $link, $tablename01, $time_now, $date_now;
+    global $user, $pass, $result, $link, $tablename01, $tablename02, $finish;
 
     echo <<<EOT
 
@@ -271,35 +291,67 @@ function work_data($start01)
     
     <body>
 EOT;
-
-    $result = mysqli_query($link, "select * from $tablename01");
-    if (!$result) {
-        exit("Select error on table ($tablename01)!");
-    }
-
-    $ary_of_fieldinfo = mysqli_fetch_fields($result);
-
-    echo '<table border="1">';
-    while ($row = mysqli_fetch_row($result)) {
-        echo "<tr>";
-        foreach ($row as $key => $value) {
-            echo "<td>" . htmlspecialchars($ary_of_fieldinfo[$key]->name) . "  : ";
-            echo htmlspecialchars($value) . "</td>";
+    if ($user == 'imai') {
+        $result = mysqli_query($link, "select * from $tablename01");
+        if (!$result) {
+            exit("Select error on table ($tablename01)!");
         }
-        echo "</tr>";
-    }
-    mysqli_free_result($result);
 
-    echo <<<EOT
+        $ary_of_fieldinfo = mysqli_fetch_fields($result);
+
+        echo '<table border="1">';
+        while ($row = mysqli_fetch_row($result)) {
+            echo "<tr>";
+            foreach ($row as $key => $value) {
+                echo "<td>" . htmlspecialchars($ary_of_fieldinfo[$key]->name) . "  : ";
+                echo htmlspecialchars($value) . "</td>";
+            }
+            echo "</tr>";
+        }
+        mysqli_free_result($result);
+    }
+    if ($user == 'kimura') {
+        $result = mysqli_query($link, "select * from $tablename02");
+        if (!$result) {
+            exit("Select error on table ($tablename02)!");
+        }
+
+        $ary_of_fieldinfo = mysqli_fetch_fields($result);
+
+        echo '<table border="1">';
+        while ($row = mysqli_fetch_row($result)) {
+            echo "<tr>";
+            foreach ($row as $key => $value) {
+                echo "<td>" . htmlspecialchars($ary_of_fieldinfo[$key]->name) . "  : ";
+                echo htmlspecialchars($value) . "</td>";
+            }
+            echo "</tr>";
+        }
+        mysqli_free_result($result);
+    }
+    if ($finish == "1") {
+        echo <<<EOT
     <p>勤務データ</p>
     <form method="POST" action="WebApp.php">
         
-        <button type="submit" name="btn01" value="btn01">退勤</button>
+        <button type="submit" name="btn01" value="btn01">出退勤画面に戻る</button>
         <input type="hidden" name="trans" value="start">
     </form>
-    
-    
-    
+EOT;
+    }
+
+    if ($finish == "0") {
+        echo <<<EOT
+        <p>勤務データ</p>
+        <form method="POST" action="WebApp.php">
+            
+            <button type="submit" name="btn01" value="btn01">出退勤画面に戻る</button>
+            <input type="hidden" name="trans" value="finish">
+        </form>
+EOT;
+    }
+
+    echo <<<EOT
     </body>
     </html>
 
