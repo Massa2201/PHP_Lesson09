@@ -1,6 +1,7 @@
 <?php
 
 $passlist = array('imai' => 'imaipass', 'kimura' => 'kimurapass');
+date_default_timezone_set('Asia/Tokyo');
 $time_now = date('H:i:s');
 $date_now = date('Y-m-d');
 
@@ -40,6 +41,11 @@ if (isset($_POST['trans'])) {
         exit;
     } else if ($_POST['trans'] == "start") {
 
+        if (isset($_POST['start'])) {
+            if ($_POST['start'] == "1") {
+                $finish = "1";
+            }
+        }
         if ($user == 'imai') {
             start("imai", "");
             exit;
@@ -75,7 +81,18 @@ if (isset($_POST['trans'])) {
 function start($name_text, $start01)
 {
 
-    global $user, $pass, $link, $result;
+    global $user, $pass, $link, $result, $finish, $tablename01, $date_now, $time_now;
+
+    if ($finish == '1') {
+        $result = mysqli_query(
+            $link,
+            "update $tablename01 set FinishTime = '$time_now' order by id DESC LIMIT 1;"
+        );
+        if (!$result) {
+            exit("UPDATE error!");
+        }
+    }
+
     echo <<<EOT
     <!DOCTYPE html>
     <html>
@@ -214,10 +231,20 @@ EOT;
     echo <<<EOT
         <h1>出勤完了画面</h1>
         <p>出勤いたしました。</p><br>
+
         <form method="POST" action="WebApp.php">
-            
+            <button type="submit" name="btn03" value="btn03">勤務データ</button>
+            <input type="hidden" name="trans" value="work_data">
+            <input type="hidden" name="user" value="$user">
+            <input type="hidden" name="pass" value="$pass">
+            <input type="hidden" name="number" value="1">
+        </form>
+        <form method="POST" action="WebApp.php">
             <button type="submit" name="btn01" value="btn01">退勤</button>
             <input type="hidden" name="trans" value="start">
+            <input type="hidden" name="user" value="$user">
+            <input type="hidden" name="pass" value="$pass">
+            <input type="hidden" name="start" value="1">
         </form>
     
     
@@ -245,6 +272,23 @@ function work_data($start01)
     <body>
 EOT;
 
+    $result = mysqli_query($link, "select * from $tablename01");
+    if (!$result) {
+        exit("Select error on table ($tablename01)!");
+    }
+
+    $ary_of_fieldinfo = mysqli_fetch_fields($result);
+
+    echo '<table border="1">';
+    while ($row = mysqli_fetch_row($result)) {
+        echo "<tr>";
+        foreach ($row as $key => $value) {
+            echo "<td>" . htmlspecialchars($ary_of_fieldinfo[$key]->name) . "  : ";
+            echo htmlspecialchars($value) . "</td>";
+        }
+        echo "</tr>";
+    }
+    mysqli_free_result($result);
 
     echo <<<EOT
     <p>勤務データ</p>
