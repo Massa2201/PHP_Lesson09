@@ -2,6 +2,7 @@
 
 $passlist = array('imai' => 'imaipass', 'kimura' => 'kimurapass');
 $time_now = date('H:i:s');
+$date_now = date('Y-m-d');
 
 if (!isset($_POST['user'])) {
     login("ログインしてください");
@@ -38,20 +39,32 @@ if (isset($_POST['trans'])) {
         login("");
         exit;
     } else if ($_POST['trans'] == "start") {
+
         if ($user == 'imai') {
-            start("imai");
+            start("imai", "");
             exit;
         } else if ($user == 'kimura') {
-            start("kimura");
+            start("kimura", "");
             exit;
         } else {
-            start("ユーザ認証に失敗しました。エラーコード0001");
+            start("ユーザ認証に失敗しました。エラーコード0001", "");
         }
     } else if ($_POST['trans'] == "finish") {
-        finish();
-        exit;
+        if ($_POST['start'] == "0") {
+            finish("0");
+            exit;
+        } else {
+            start("出勤に失敗しました。エラーコード0002", "");
+        }
     } else if ($_POST['trans'] == "work_data") {
-        work_data();
+        if ($_POST['number'] == "0") {
+            work_data("");
+            exit;
+        } else {
+            work_data("");
+            exit;
+        }
+        work_data("");
         exit;
     }
 } else {
@@ -59,19 +72,20 @@ if (isset($_POST['trans'])) {
     exit;
 }
 
-function start($name_text)
+function start($name_text, $start01)
 {
-    global $user, $pass;
+
+    global $user, $pass, $link, $result;
     echo <<<EOT
-<!DOCTYPE html>
-<html>
+    <!DOCTYPE html>
+    <html>
 
-<head>
-    <meta charset="utf-8" />
-    <title>出勤準備画面</title>
-</head>
+    <head>
+        <meta charset="utf-8" />
+        <title>出勤準備画面</title>
+    </head>
 
-<body>
+    <body>
 
     <header>
 
@@ -92,6 +106,7 @@ EOT;
         <input type="hidden" name="trans" value="work_data">
         <input type="hidden" name="user" value="$user">
         <input type="hidden" name="pass" value="$pass">
+        <input type="hidden" name="number" value="0">
     </form>
 EOT;
     }
@@ -104,9 +119,11 @@ EOT;
             <input type="hidden" name="trans" value="work_data">
             <input type="hidden" name="user" value="$user">
             <input type="hidden" name="pass" value="$pass">
+            <input type="hidden" name="number" value="1">
         </form>
 EOT;
     }
+
 
     echo <<<EOT
     <form method="POST" action="WebApp.php">
@@ -114,7 +131,11 @@ EOT;
         <input type="hidden" name="trans" value="finish">
         <input type="hidden" name="user" value="$user">
         <input type="hidden" name="pass" value="$pass">
+        <input type="hidden" name="start" value="0">
     </form>
+EOT;
+
+    echo <<<EOT
 
     </main>
 
@@ -123,8 +144,8 @@ EOT;
     </footer>
 
 
-</body>
-</html>
+    </body>
+    </html>
 
 EOT;
 }
@@ -162,9 +183,9 @@ function login($text)
 EOT;
 }
 
-function finish()
+function finish($finish)
 {
-    global $user, $pass;
+    global $user, $pass, $link, $tablename01, $date_now, $time_now;
 
     echo <<<EOT
 
@@ -177,7 +198,20 @@ function finish()
     </head>
     
     <body>
-    
+EOT;
+
+    if ($finish == '0') {
+        $result = mysqli_query(
+            $link,
+            "INSERT INTO $tablename01 SET WorkDate='$date_now', StartTime='$time_now'"
+        );
+        if (!$result) {
+            exit("INSERT error!");
+        }
+    }
+
+
+    echo <<<EOT
         <h1>出勤完了画面</h1>
         <p>出勤いたしました。</p><br>
         <form method="POST" action="WebApp.php">
@@ -194,9 +228,9 @@ function finish()
 
 EOT;
 }
-function work_data()
+function work_data($start01)
 {
-    global $user, $pass;
+    global $user, $pass, $result, $link, $tablename01, $time_now, $date_now;
 
     echo <<<EOT
 
@@ -209,13 +243,16 @@ function work_data()
     </head>
     
     <body>
-    
-        <p>勤務データ</p>
-        <form method="POST" action="WebApp.php">
-            
-            <button type="submit" name="btn01" value="btn01">退勤</button>
-            <input type="hidden" name="trans" value="start">
-        </form>
+EOT;
+
+
+    echo <<<EOT
+    <p>勤務データ</p>
+    <form method="POST" action="WebApp.php">
+        
+        <button type="submit" name="btn01" value="btn01">退勤</button>
+        <input type="hidden" name="trans" value="start">
+    </form>
     
     
     
