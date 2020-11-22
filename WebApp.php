@@ -57,11 +57,16 @@ if (isset($_POST['trans'])) {
             start("ユーザ認証に失敗しました。エラーコード0001", "");
         }
     } else if ($_POST['trans'] == "finish") {
-        if ($_POST['start'] == "0") {
-            finish("0");
-            exit;
+        if (isset($_POST['start'])) {
+            if ($_POST['start'] == "0") {
+                finish("0");
+                exit;
+            } else {
+                start("出勤に失敗しました。エラーコード0002", "");
+                exit;
+            }
         } else {
-            start("出勤に失敗しました。エラーコード0002", "");
+            finish("");
         }
     } else if ($_POST['trans'] == "work_data") {
         work_data();
@@ -116,8 +121,8 @@ function start($name_text, $start01)
 
     <main>
     <p>$name_text</p>
-    <p>$date_now</p>
-    <p>$time_now</p>
+    <p>現在の日付は$date_now</p>
+    <p>現在の時間は$time_now</p>
 EOT;
     if ($name_text == "imai") {
 
@@ -309,7 +314,19 @@ EOT;
             echo "</tr>";
         }
         mysqli_free_result($result);
+
+        echo <<<EOT
+        <p>勤務データ</p>
+        <form method="POST" action="WebApp.php">
+            
+            <button type="submit" name="btn01" value="btn01">出退勤画面に戻る</button>
+            <input type="hidden" name="user" value="$user">
+            <input type="hidden" name="pass" value="$pass">
+            <input type="hidden" name="trans" value="start">
+        </form>
+EOT;
     }
+
     if ($user == 'kimura') {
         $result = mysqli_query($link, "select * from $tablename02");
         if (!$result) {
@@ -328,25 +345,15 @@ EOT;
             echo "</tr>";
         }
         mysqli_free_result($result);
-    }
-    if ($finish == "1") {
-        echo <<<EOT
-    <p>勤務データ</p>
-    <form method="POST" action="WebApp.php">
-        
-        <button type="submit" name="btn01" value="btn01">出退勤画面に戻る</button>
-        <input type="hidden" name="trans" value="start">
-    </form>
-EOT;
-    }
 
-    if ($finish == "0") {
         echo <<<EOT
         <p>勤務データ</p>
         <form method="POST" action="WebApp.php">
             
-            <button type="submit" name="btn01" value="btn01">出退勤画面に戻る</button>
-            <input type="hidden" name="trans" value="finish">
+            <button type="submit" name="btn07" value="btn07">出退勤画面に戻る</button>
+            <input type="hidden" name="user" value="$user">
+            <input type="hidden" name="pass" value="$pass">
+            <input type="hidden" name="trans" value="start">
         </form>
 EOT;
     }
